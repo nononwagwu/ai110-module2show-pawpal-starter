@@ -9,7 +9,7 @@ class Task:
     task_id: int
     description: str
     date_time: datetime
-    frequency: str = "once"   # e.g., once, daily, weekly
+    frequency: str = "once"
     status: str = "pending"
     pet: Optional["Pet"] = None
 
@@ -18,11 +18,14 @@ class Task:
         self.status = "completed"
 
     def reschedule(self, new_date_time: datetime):
+        """Reschedule the task."""
         self.date_time = new_date_time
         self.status = "pending"
 
-    def get_details(self) -> str:
-        return f"{self.description} for {self.pet.name if self.pet else 'Unknown'} at {self.date_time} [{self.status}]"
+    def get_details(self):
+        """Return readable task info."""
+        pet_name = self.pet.name if self.pet else "Unknown"
+        return f"{self.description} for {pet_name} at {self.date_time.strftime('%I:%M %p')} [{self.status}]"
 
 
 # -------------------- Pet --------------------
@@ -35,14 +38,16 @@ class Pet:
     tasks: List[Task] = field(default_factory=list)
 
     def add_task(self, task: Task):
-        """Add a task to this pet and link it."""
+        """Add a task and link it to this pet."""
         task.pet = self
         self.tasks.append(task)
 
     def get_tasks(self) -> List[Task]:
+        """Return all tasks for this pet."""
         return self.tasks
 
     def update_details(self, name: str, type: str, age: int):
+        """Update pet info."""
         self.name = name
         self.type = type
         self.age = age
@@ -57,12 +62,15 @@ class Owner:
         self.pets: List[Pet] = []
 
     def add_pet(self, pet: Pet):
+        """Add a pet."""
         self.pets.append(pet)
 
     def remove_pet(self, pet_id: int):
-        self.pets = [pet for pet in self.pets if pet.pet_id != pet_id]
+        """Remove a pet by ID."""
+        self.pets = [p for p in self.pets if p.pet_id != pet_id]
 
     def get_pets(self) -> List[Pet]:
+        """Return all pets."""
         return self.pets
 
     def get_all_tasks(self) -> List[Task]:
@@ -79,32 +87,38 @@ class Scheduler:
         self.owner = owner
 
     def get_all_tasks(self) -> List[Task]:
-        """Return all tasks across all pets."""
+        """Retrieve all tasks."""
         return self.owner.get_all_tasks()
 
+    def sort_by_time(self, tasks: List[Task]) -> List[Task]:
+        """Sort tasks by time."""
+        return sorted(tasks, key=lambda t: t.date_time)
+
     def get_tasks_for_today(self) -> List[Task]:
-        """Retrieve all tasks scheduled for today."""
-        today = date.today()
-        return [
+        """Get today's tasks sorted by time."""
+        today_tasks = [
             task for task in self.get_all_tasks()
-            if task.date_time.date() == today
+            if task.date_time.date() == date.today()
         ]
+        return self.sort_by_time(today_tasks)
 
     def get_tasks_by_pet(self, pet_id: int) -> List[Task]:
+        """Get tasks for a specific pet."""
         return [
             task for task in self.get_all_tasks()
             if task.pet and task.pet.pet_id == pet_id
         ]
 
-    def add_task(self, pet_id: int, task: Task):
-        """Add a task to this pet and link it."""
-        task.pet = self
-        self.tasks.append(task)
-        for pet in self.owner.get_pets():
-            if pet.pet_id == pet_id:
-                pet.add_task(task)
-                return
+    def filter_by_pet_name(self, pet_name: str) -> List[Task]:
+        """Filter tasks by pet name."""
+        return [
+            task for task in self.get_all_tasks()
+            if task.pet and task.pet.name.lower() == pet_name.lower()
+        ]
 
-    def remove_task(self, task_id: int):
-        for pet in self.owner.get_pets():
-            pet.tasks = [t for t in pet.tasks if t.task_id != task_id]
+    def get_tasks_by_status(self, status: str) -> List[Task]:
+        """Filter tasks by status."""
+        return [
+            task for task in self.get_all_tasks()
+            if task.status == status
+        ]

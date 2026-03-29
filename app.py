@@ -10,23 +10,17 @@ owner = st.session_state.owner
 
 
 # -------------------- Page Setup --------------------
-st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
+st.set_page_config(page_title="PawPal+", page_icon="🐾")
 
 st.title("🐾 PawPal+")
 
-st.markdown("Simple pet care planner demo.")
-
-st.divider()
-
-
-# -------------------- Owner & Pet Input --------------------
+# -------------------- Add Pet --------------------
 st.subheader("Add Pet")
 
 owner_name = st.text_input("Owner name", value=owner.name)
 pet_name = st.text_input("Pet name")
 species = st.selectbox("Species", ["dog", "cat", "other"])
 
-# update owner name
 owner.name = owner_name
 
 if st.button("Add Pet"):
@@ -39,29 +33,28 @@ if st.button("Add Pet"):
     owner.add_pet(new_pet)
     st.success(f"{pet_name} added!")
 
-# display pets
-if owner.get_pets():
+# Show pets
+pets = owner.get_pets()
+if pets:
     st.write("Your Pets:")
-    for pet in owner.get_pets():
+    for pet in pets:
         st.write(f"- {pet.name} ({pet.type})")
 else:
     st.info("No pets yet.")
 
-
 st.divider()
 
-
-# -------------------- Task Input --------------------
+# -------------------- Add Task --------------------
 st.subheader("Add Task")
 
 task_title = st.text_input("Task title")
 task_time = st.time_input("Task time")
 
 if st.button("Add Task"):
-    if not owner.get_pets():
+    if not pets:
         st.warning("Add a pet first!")
     else:
-        pet = owner.get_pets()[0]  # simple: first pet
+        pet = pets[0]  # simple version
 
         new_task = Task(
             task_id=len(pet.tasks) + 1,
@@ -70,39 +63,47 @@ if st.button("Add Task"):
         )
 
         pet.add_task(new_task)
-        st.success(f"Task '{task_title}' added to {pet.name}!")
-
-# display tasks
-if owner.get_pets():
-    pet = owner.get_pets()[0]
-    if pet.tasks:
-        st.write("Tasks:")
-        for task in pet.tasks:
-            st.write(f"- {task.description} at {task.date_time.strftime('%I:%M %p')} [{task.status}]")
-    else:
-        st.info("No tasks yet.")
-
+        st.success(f"Task added to {pet.name}!")
 
 st.divider()
 
-
-# -------------------- Schedule --------------------
-st.subheader("Today's Schedule")
+# -------------------- Filters --------------------
+st.subheader("Filters")
 
 scheduler = Scheduler(owner)
-tasks_today = sorted(
-    scheduler.get_tasks_for_today(),
-    key=lambda t: t.date_time
+
+selected_pet = st.selectbox(
+    "Filter by Pet",
+    ["All"] + [pet.name for pet in pets]
 )
 
-if st.button("Generate Schedule"):
-    if not tasks_today:
-        st.warning("No tasks scheduled for today.")
-    else:
-        st.success("Schedule generated!")
+selected_status = st.selectbox(
+    "Filter by Status",
+    ["All", "pending", "completed"]
+)
 
-        for task in tasks_today:
-            st.write(
-                f"{task.date_time.strftime('%I:%M %p')} | "
-                f"{task.pet.name} → {task.description} [{task.status}]"
-            )
+# -------------------- Get Tasks --------------------
+tasks = scheduler.get_all_tasks()
+
+# Apply pet filter
+if selected_pet != "All":
+    tasks = scheduler.filter_by_pet_name(selected_pet)
+
+# Apply status filter
+if selected_status != "All":
+    tasks = [t for t in tasks if t.status == selected_status]
+
+# Sort tasks
+tasks = scheduler.sort_by_time(tasks)
+
+# -------------------- Display --------------------
+st.subheader("Tasks")
+
+if not tasks:
+    st.info("No tasks available.")
+else:
+    for task in tasks:
+        st.write(
+            f"{task.date_time.strftime('%I:%M %p')} | "
+            f"{task.pet.name} → {task.description} [{task.status}]"
+        )
