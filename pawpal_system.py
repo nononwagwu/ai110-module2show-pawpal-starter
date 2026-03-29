@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
@@ -29,13 +29,6 @@ class Pet:
     name: str
     type: str
     age: int
-    tasks: List[Task] = field(default_factory=list)
-
-    def add_task(self, task: Task):
-        pass
-
-    def get_tasks(self) -> List[Task]:
-        pass
 
     def update_details(self, name: str, type: str, age: int):
         pass
@@ -59,7 +52,7 @@ class Owner:
         pass
 
 
-# Scheduler --------------------
+# -------------------- Scheduler --------------------
 class Scheduler:
     def __init__(self):
         self.tasks: List[Task] = []
