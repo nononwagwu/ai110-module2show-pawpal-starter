@@ -14,6 +14,7 @@ class Task:
     pet: Optional["Pet"] = None
 
     def mark_complete(self):
+        """Mark the task as completed."""
         self.status = "completed"
 
     def reschedule(self, new_date_time: datetime):
@@ -34,6 +35,7 @@ class Pet:
     tasks: List[Task] = field(default_factory=list)
 
     def add_task(self, task: Task):
+        """Add a task to this pet and link it."""
         task.pet = self
         self.tasks.append(task)
 
@@ -64,6 +66,7 @@ class Owner:
         return self.pets
 
     def get_all_tasks(self) -> List[Task]:
+        """Return all tasks across all pets."""
         tasks = []
         for pet in self.pets:
             tasks.extend(pet.get_tasks())
@@ -76,9 +79,11 @@ class Scheduler:
         self.owner = owner
 
     def get_all_tasks(self) -> List[Task]:
+        """Return all tasks across all pets."""
         return self.owner.get_all_tasks()
 
     def get_tasks_for_today(self) -> List[Task]:
+        """Retrieve all tasks scheduled for today."""
         today = date.today()
         return [
             task for task in self.get_all_tasks()
@@ -92,6 +97,9 @@ class Scheduler:
         ]
 
     def add_task(self, pet_id: int, task: Task):
+        """Add a task to this pet and link it."""
+        task.pet = self
+        self.tasks.append(task)
         for pet in self.owner.get_pets():
             if pet.pet_id == pet_id:
                 pet.add_task(task)
