@@ -40,6 +40,7 @@ Third, I clarified responsibilities across classes. The Owner manages pets, the 
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+One tradeoff in my scheduler is the way conflict detection is implemented. The algorithm only checks for tasks that occur at the exact same time rather than detecting overlapping durations. This simplifies the implementation and keeps the code easy to read and maintain. However, it means the system may not detect conflicts where tasks overlap but start at slightly different times. Additionally, I chose a more explicit loop-based approach instead of a more compact Pythonic version to prioritize readability and clarity over conciseness.
 
 ---
 

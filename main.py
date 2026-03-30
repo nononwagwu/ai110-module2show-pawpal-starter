@@ -13,26 +13,26 @@ cat = Pet(2, "Whiskers", "Cat", 2)
 owner.add_pet(dog)
 owner.add_pet(cat)
 
-# Create tasks (some for today, some not)
-task1 = Task(1, "Morning Walk", datetime.now() + timedelta(hours=1))
-task2 = Task(2, "Feed Dinner", datetime.now() + timedelta(hours=5))
+# SAME TIME (to trigger conflict)
+same_time = datetime.now() + timedelta(hours=2)
+
+task1 = Task(1, "Morning Walk", same_time)
+task2 = Task(2, "Feed Dinner", same_time)
+
+# Another task (different time)
 task3 = Task(3, "Vet Appointment", datetime.now() + timedelta(days=1))
 
-# Assign tasks to pets
+# Assign tasks
 dog.add_task(task1)
-dog.add_task(task2)
+cat.add_task(task2)
 cat.add_task(task3)
 
 # Create scheduler
 scheduler = Scheduler(owner)
 
-# Get today's tasks
-today_tasks = sorted(
-    scheduler.get_tasks_for_today(),
-    key=lambda task: task.date_time
-)
+# -------------------- Schedule --------------------
+today_tasks = scheduler.get_tasks_for_today()
 
-# Print schedule (clean format)
 print("\n=== Today's Schedule ===\n")
 
 if not today_tasks:
@@ -44,4 +44,15 @@ else:
         status = "✓" if task.status == "completed" else "•"
 
         print(f"{status} {time_str} | {pet_name:<10} | {task.description}")
-    
+
+
+# -------------------- Conflict Detection --------------------
+print("\n=== Conflict Check ===\n")
+
+conflicts = scheduler.detect_conflicts()
+
+if not conflicts:
+    print("No conflicts found.")
+else:
+    for c in conflicts:
+        print(c)

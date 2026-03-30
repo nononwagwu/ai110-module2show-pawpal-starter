@@ -41,3 +41,16 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+### Smarter Scheduling
+Use the Generate documentation smart action to add docstrings to your new algorithmic methods.
+
+
+Update your README.md with a short section called Smarter Scheduling summarizing your new features.
+
+
+Commit and push your changes directly to the main branch:
+
+git add .
+git commit -m "feat: implement sorting, filtering, and conflict detection"
+git push origin main

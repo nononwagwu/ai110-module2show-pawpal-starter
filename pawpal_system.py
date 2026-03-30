@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import List, Optional
 
 
@@ -16,6 +16,27 @@ class Task:
     def mark_complete(self):
         """Mark the task as completed."""
         self.status = "completed"
+        if not self.pet:
+            return None
+
+        if self.frequency == "daily":
+            next_time = self.date_time + timedelta(days=1)
+
+        elif self.frequency == "weekly":
+            next_time = self.date_time + timedelta(weeks=1)
+
+        else:
+            return None
+
+        new_task = Task(
+            task_id=self.task_id + 1000,
+            description=self.description,
+            date_time=next_time,
+            frequency=self.frequency
+        )
+
+        self.pet.add_task(new_task)
+        return new_task
 
     def reschedule(self, new_date_time: datetime):
         """Reschedule the task."""
@@ -122,3 +143,21 @@ class Scheduler:
             task for task in self.get_all_tasks()
             if task.status == status
         ]
+    def detect_conflicts(self) -> List[str]:
+        """Detect tasks that occur at the same time and return warnings."""
+        warnings = []
+        tasks = self.sort_by_time(self.get_all_tasks())
+
+        for i in range(len(tasks)):
+            for j in range(i + 1, len(tasks)):
+                t1 = tasks[i]
+                t2 = tasks[j]
+                # same exact time
+                if t1.date_time == t2.date_time:
+                    pet1 = t1.pet.name if t1.pet else "Unknown"
+                    pet2 = t2.pet.name if t2.pet else "Unknown"
+                    warnings.append(
+                        f"Conflict: '{t1.description}' ({pet1}) "
+                        f"and '{t2.description}' ({pet2}) are at the same time."
+                   )
+        return warnings
