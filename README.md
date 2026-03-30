@@ -71,3 +71,22 @@ Recurring Tasks: Confirms that daily tasks automatically generate a new task for
 Conflict Detection: Verifies that the system detects tasks scheduled at the same time and returns a warning
 
 These tests help ensure that the scheduling logic behaves correctly and consistently.
+
+## Features
+Features
+
+PawPal+ includes intelligent scheduling features to help manage pet care tasks efficiently:
+
+Task Sorting
+Tasks are automatically sorted in chronological order for a clear daily schedule.
+Filtering System
+Tasks can be filtered by:
+Pet name
+Completion status (pending or completed)
+Recurring Tasks
+Daily and weekly tasks automatically generate a new occurrence when completed.
+Conflict Detection
+The system detects tasks scheduled at the same exact time and displays warnings without interrupting execution.
+Clean UI Integration
+All scheduling logic is reflected in the Streamlit interface with structured tables and visual feedback.
+![alt text](screenshot.png-1.png)

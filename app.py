@@ -72,6 +72,11 @@ st.subheader("Filters")
 
 scheduler = Scheduler(owner)
 
+# -------------------- Filters --------------------
+st.subheader("Filters")
+
+pets = owner.get_pets()
+
 selected_pet = st.selectbox(
     "Filter by Pet",
     ["All"] + [pet.name for pet in pets]
@@ -85,15 +90,13 @@ selected_status = st.selectbox(
 # -------------------- Get Tasks --------------------
 tasks = scheduler.get_all_tasks()
 
-# Apply pet filter
 if selected_pet != "All":
     tasks = scheduler.filter_by_pet_name(selected_pet)
 
-# Apply status filter
 if selected_status != "All":
     tasks = [t for t in tasks if t.status == selected_status]
 
-# Sort tasks
+# Always sort
 tasks = scheduler.sort_by_time(tasks)
 
 # -------------------- Display --------------------
@@ -102,8 +105,24 @@ st.subheader("Tasks")
 if not tasks:
     st.info("No tasks available.")
 else:
+    table_data = []
+
     for task in tasks:
-        st.write(
-            f"{task.date_time.strftime('%I:%M %p')} | "
-            f"{task.pet.name} → {task.description} [{task.status}]"
-        )
+        table_data.append({
+            "Time": task.date_time.strftime("%I:%M %p"),
+            "Pet": task.pet.name if task.pet else "Unknown",
+            "Task": task.description,
+            "Status": task.status
+        })
+
+    st.table(table_data)
+
+conflicts = scheduler.detect_conflicts()
+
+if conflicts:
+    st.warning("⚠️ Scheduling Conflicts Detected")
+
+    for c in conflicts:
+        st.write(f"- {c}")
+else:
+    st.success("No scheduling conflicts.")
