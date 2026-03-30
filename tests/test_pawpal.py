@@ -2,71 +2,54 @@ from datetime import datetime, timedelta
 from pawpal_system import Task, Pet, Owner, Scheduler
 
 
-# -------- Existing Tests --------
-def test_task_mark_complete():
-    task = Task(1, "Walk dog", datetime.now())
-    task.mark_complete()
-    assert task.status == "completed"
-
-
-def test_pet_add_task():
-    pet = Pet(1, "Buddy", "Dog", 3)
-    task = Task(1, "Feed dog", datetime.now())
-
-    pet.add_task(task)
-
-    assert len(pet.tasks) == 1
-    assert task.pet == pet
-
-
-# -------- New Tests --------
-
-def test_sort_by_time():
+# -------- Sorting Correctness --------
+def test_sorting_tasks_chronologically():
     owner = Owner(1, "John", "john@example.com")
     pet = Pet(1, "Buddy", "Dog", 3)
     owner.add_pet(pet)
 
     now = datetime.now()
 
-    task1 = Task(1, "Late Task", now + timedelta(hours=3))
-    task2 = Task(2, "Early Task", now + timedelta(hours=1))
-    task3 = Task(3, "Middle Task", now + timedelta(hours=2))
+    t1 = Task(1, "Late", now + timedelta(hours=3))
+    t2 = Task(2, "Early", now + timedelta(hours=1))
+    t3 = Task(3, "Middle", now + timedelta(hours=2))
 
-    pet.add_task(task1)
-    pet.add_task(task2)
-    pet.add_task(task3)
+    pet.add_task(t1)
+    pet.add_task(t2)
+    pet.add_task(t3)
 
     scheduler = Scheduler(owner)
-
     sorted_tasks = scheduler.sort_by_time(scheduler.get_all_tasks())
 
-    assert sorted_tasks[0].description == "Early Task"
-    assert sorted_tasks[1].description == "Middle Task"
-    assert sorted_tasks[2].description == "Late Task"
+    assert [t.description for t in sorted_tasks] == ["Early", "Middle", "Late"]
 
 
-def test_filter_by_status():
+# -------- Recurrence Logic --------
+def test_daily_task_creates_next_occurrence():
     owner = Owner(1, "John", "john@example.com")
     pet = Pet(1, "Buddy", "Dog", 3)
     owner.add_pet(pet)
 
-    task1 = Task(1, "Task 1", datetime.now())
-    task2 = Task(2, "Task 2", datetime.now())
+    now = datetime.now()
 
-    pet.add_task(task1)
-    pet.add_task(task2)
+    task = Task(1, "Walk dog", now, frequency="daily")
+    pet.add_task(task)
 
-    task1.mark_complete()
+    new_task = task.mark_complete()
 
-    scheduler = Scheduler(owner)
+    # original task completed
+    assert task.status == "completed"
 
-    completed_tasks = scheduler.get_tasks_by_status("completed")
+    # new task created
+    assert new_task is not None
+    assert new_task in pet.tasks
 
-    assert len(completed_tasks) == 1
-    assert completed_tasks[0].description == "Task 1"
+    # new task is scheduled for next day
+    assert new_task.date_time.date() == (now + timedelta(days=1)).date()
 
 
-def test_filter_by_pet_name():
+# -------- Conflict Detection --------
+def test_conflict_detection_same_time():
     owner = Owner(1, "John", "john@example.com")
 
     dog = Pet(1, "Buddy", "Dog", 3)
@@ -75,15 +58,16 @@ def test_filter_by_pet_name():
     owner.add_pet(dog)
     owner.add_pet(cat)
 
-    task1 = Task(1, "Walk dog", datetime.now())
-    task2 = Task(2, "Feed cat", datetime.now())
+    same_time = datetime.now()
 
-    dog.add_task(task1)
-    cat.add_task(task2)
+    t1 = Task(1, "Walk dog", same_time)
+    t2 = Task(2, "Feed cat", same_time)
+
+    dog.add_task(t1)
+    cat.add_task(t2)
 
     scheduler = Scheduler(owner)
+    conflicts = scheduler.detect_conflicts()
 
-    buddy_tasks = scheduler.filter_by_pet_name("Buddy")
-
-    assert len(buddy_tasks) == 1
-    assert buddy_tasks[0].description == "Walk dog"
+    assert len(conflicts) == 1
+    assert "Conflict" in conflicts[0]

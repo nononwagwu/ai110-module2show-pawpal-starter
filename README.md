@@ -54,3 +54,20 @@ Commit and push your changes directly to the main branch:
 git add .
 git commit -m "feat: implement sorting, filtering, and conflict detection"
 git push origin main
+
+### Testing Pawpal+
+The tests verify the core functionality of the PawPal+ system, including:
+
+Sorting: Ensures tasks are returned in correct chronological order
+Recurring Tasks: Confirms that daily tasks automatically generate a new task for the next day when completed
+Conflict Detection: Verifies that the system detects tasks scheduled at the same time and returns a warning
+
+These tests help ensure that the scheduling logic behaves correctly and consistently.
+### Confidence Level 4/5
+The tests verify the core functionality of the PawPal+ system, including:
+
+Sorting: Ensures tasks are returned in correct chronological order
+Recurring Tasks: Confirms that daily tasks automatically generate a new task for the next day when completed
+Conflict Detection: Verifies that the system detects tasks scheduled at the same time and returns a warning
+
+These tests help ensure that the scheduling logic behaves correctly and consistently.
